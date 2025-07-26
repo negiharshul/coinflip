@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Coin Flip Admin Panel</title>
+  <title>Admin Panel - Coin Flip Control</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #2c3e50, #4ca1af);
+      background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
       color: #fff;
       text-align: center;
-      padding: 40px;
+      padding: 50px;
     }
-    h2 {
-      font-size: 2.2rem;
+    h1 {
+      font-size: 2.5rem;
       margin-bottom: 30px;
     }
     button {
@@ -21,37 +21,34 @@
       margin: 10px;
       background: #00c6ff;
       border: none;
-      border-radius: 8px;
       color: white;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease;
+      transition: background 0.3s ease;
     }
     button:hover {
       background: #0072ff;
-      transform: scale(1.05);
     }
     .status {
-      margin-top: 30px;
-      font-size: 1.3rem;
-      background-color: rgba(255, 255, 255, 0.1);
-      padding: 15px 25px;
-      border-radius: 10px;
-      display: inline-block;
+      margin-top: 20px;
+      font-size: 1.2rem;
+      color: #cceeff;
     }
   </style>
 </head>
 <body>
 
-<h2>Remote Coin Flip Admin Panel</h2>
+<h1>Admin Control Panel</h1>
+<p>Set the preferred outcome for the coin flip:</p>
 <button onclick="setWinner('heads')">Force Heads</button>
 <button onclick="setWinner('tails')">Force Tails</button>
-<button onclick="setWinner('random')">Set Random</button>
+<button onclick="setWinner('random')">Set to Random</button>
 
-<div class="status" id="status">Loading current preference...</div>
+<div class="status" id="status"></div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBaPtBqmrww9DNvvOzK0OWZ95EPyOSrO_M",
@@ -66,21 +63,10 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  async function setWinner(choice) {
-    await set(ref(db, "winner"), choice);
-    document.getElementById("status").textContent = `Winner preference set to: ${choice.toUpperCase()}`;
-  }
-
-  async function loadStatus() {
-    const snapshot = await get(ref(db, "winner"));
-    if (snapshot.exists()) {
-      document.getElementById("status").textContent = `Current winner preference: ${snapshot.val().toUpperCase()}`;
-    } else {
-      document.getElementById("status").textContent = "No preference set yet.";
-    }
-  }
-
-  loadStatus();
+  window.setWinner = async function (choice) {
+    await set(ref(db, 'winner'), choice);
+    document.getElementById("status").textContent = `Set to: ${choice.toUpperCase()}`;
+  };
 </script>
 
 </body>
