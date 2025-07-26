@@ -1,0 +1,169 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Remote Coin Flip</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: #fff;
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+    }
+    .coin {
+      width: 100px;
+      height: 100px;
+      margin: 20px auto;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, #eee, #aaa);
+      color: #333;
+      font-size: 2rem;
+      line-height: 100px;
+      font-weight: bold;
+      animation: flip 0.6s ease-in-out;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+    .coin-area {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    @keyframes flip {
+      0% { transform: rotateY(0); }
+      50% { transform: rotateY(180deg); }
+      100% { transform: rotateY(360deg); }
+    }
+    button {
+      font-size: 18px;
+      padding: 12px 24px;
+      margin: 20px 10px;
+      background: #00c6ff;
+      border: none;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #0072ff;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 1.4rem;
+      font-weight: 500;
+    }
+    #win-count {
+      margin-top: 30px;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Best of 3 Coin Flip</h1>
+<div class="coin-area">
+  <div class="coin" id="coin1">?</div>
+  <div class="coin" id="coin2">?</div>
+  <div class="coin" id="coin3">?</div>
+</div>
+<div id="result"></div>
+<div id="win-count">Heads Wins: <span id="headsWin">0</span> | Tails Wins: <span id="tailsWin">0</span></div>
+<button onclick="flipCoins()">Flip Coins</button>
+<button onclick="resetScore()">Reset Score</button>
+
+<audio id="win-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_f9c87f160b.mp3?filename=success-1-6297.mp3"></audio>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBaPtBqmrww9DNvvOzK0OWZ95EPyOSrO_M",
+    authDomain: "coin-flip-control.firebaseapp.com",
+    databaseURL: "https://coin-flip-control-default-rtdb.firebaseio.com",
+    projectId: "coin-flip-control",
+    storageBucket: "coin-flip-control.firebasestorage.app",
+    messagingSenderId: "145885761579",
+    appId: "1:145885761579:web:844502ebb927c8114d1a6e"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  let headsTotal = 0;
+  let tailsTotal = 0;
+
+  async function getWinnerPreference() {
+    const snapshot = await get(ref(db, 'winner'));
+    if (snapshot.exists()) {
+      return snapshot.val();
+    }
+    return "random";
+  }
+
+  async function flipCoins() {
+    const winner = await getWinnerPreference();
+    const coinEls = [document.getElementById("coin1"), document.getElementById("coin2"), document.getElementById("coin3")];
+    let flips = [];
+
+    if (winner === "random") {
+      for (let i = 0; i < 3; i++) {
+        flips.push(Math.random() < 0.5 ? "Heads" : "Tails");
+      }
+    } else {
+      const winSide = winner === "heads" ? "Heads" : "Tails";
+      const loseSide = winSide === "Heads" ? "Tails" : "Heads";
+      const winCount = Math.random() < 0.5 ? 2 : 3;
+      flips = Array(winCount).fill(winSide).concat(Array(3 - winCount).fill(loseSide));
+      flips.sort(() => Math.random() - 0.5);
+    }
+
+    for (let i = 0; i < 3; i++) {
+      coinEls[i].textContent = "?";
+      coinEls[i].style.animation = "none";
+      void coinEls[i].offsetWidth;
+      coinEls[i].style.animation = null;
+      await new Promise(r => setTimeout(r, 300));
+      coinEls[i].textContent = flips[i];
+    }
+
+    const heads = flips.filter(f => f === "Heads").length;
+    const tails = 3 - heads;
+    const resultText = `<strong>${heads > tails ? "Heads" : "Tails"}</strong> wins (${heads} - ${tails})`;
+    document.getElementById("result").innerHTML = resultText;
+
+    if (heads > tails) {
+      headsTotal++;
+    } else {
+      tailsTotal++;
+    }
+
+    document.getElementById("headsWin").textContent = headsTotal;
+    document.getElementById("tailsWin").textContent = tailsTotal;
+
+    document.getElementById("win-sound").play();
+    confetti({
+      particleCount: 80,
+      spread: 100,
+      origin: { y: 0.6 }
+    });
+  }
+
+  window.resetScore = function () {
+    headsTotal = 0;
+    tailsTotal = 0;
+    document.getElementById("headsWin").textContent = headsTotal;
+    document.getElementById("tailsWin").textContent = tailsTotal;
+    document.getElementById("result").textContent = "";
+  }
+</script>
+
+</body>
+</html>
