@@ -2,24 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <title>Admin Panel - Coin Flip Control</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
-  <title>Admin Panel - Coin Flip Control</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
       color: #fff;
       text-align: center;
-      padding: 50px 20px;
-      margin: 0;
+      padding: 40px;
     }
     h1 {
-      font-size: 2.5rem;
-      margin-bottom: 30px;
-    }
-    p {
-      font-size: 1.2rem;
+      font-size: 2.2rem;
       margin-bottom: 20px;
     }
     button {
@@ -29,57 +24,89 @@
       background: #00c6ff;
       border: none;
       color: white;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background 0.3s ease;
-      display: block;
-      width: 100%;
-      max-width: 300px;
-      margin-left: auto;
-      margin-right: auto;
     }
     button:hover {
       background: #0072ff;
     }
-    .status {
-      margin-top: 30px;
-      font-size: 1.1rem;
-      color: #cceeff;
+    input {
+      padding: 10px;
+      margin: 8px;
+      border-radius: 6px;
+      border: none;
+      width: 80%;
+      max-width: 300px;
     }
-    @media (min-width: 600px) {
-      button {
-        display: inline-block;
-        width: auto;
-      }
-    }
+    .hidden { display: none; }
+    #status { margin-top: 15px; color: #cceeff; }
   </style>
 </head>
 <body>
 
-<h1>Admin Control Panel</h1>
-<p>Set the preferred outcome for the coin flip:</p>
-<button onclick="setWinner('heads')">Force Heads</button>
-<button onclick="setWinner('tails')">Force Tails</button>
-<button onclick="setWinner('random')">Set to Random</button>
+<div id="login-screen">
+  <h1>Admin Login</h1>
+  <input type="email" id="email" placeholder="Email"><br>
+  <input type="password" id="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <div id="login-status"></div>
+</div>
 
-<div class="status" id="status"></div>
+<div id="admin-panel" class="hidden">
+  <h1>Admin Control Panel</h1>
+  <p>Set the preferred outcome for the coin flip:</p>
+  <button onclick="setWinner('heads')">Force Heads</button>
+  <button onclick="setWinner('tails')">Force Tails</button>
+  <button onclick="setWinner('random')">Set to Random</button>
+  <div id="status"></div>
+  <button onclick="logout()">Logout</button>
+</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBaPtBqmrww9DNvvOzK0OWZ95EPyOSrO_M",
     authDomain: "coin-flip-control.firebaseapp.com",
     databaseURL: "https://coin-flip-control-default-rtdb.firebaseio.com",
     projectId: "coin-flip-control",
-    storageBucket: "coin-flip-control.firebasestorage.app",
+    storageBucket: "coin-flip-control.appspot.com",
     messagingSenderId: "145885761579",
     appId: "1:145885761579:web:844502ebb927c8114d1a6e"
   };
 
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  // Show/hide screens based on login status
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      document.getElementById("login-screen").classList.add("hidden");
+      document.getElementById("admin-panel").classList.remove("hidden");
+    } else {
+      document.getElementById("login-screen").classList.remove("hidden");
+      document.getElementById("admin-panel").classList.add("hidden");
+    }
+  });
+
+  window.login = async function () {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    const status = document.getElementById("login-status");
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      status.textContent = "";
+    } catch (error) {
+      status.textContent = "❌ Login failed: " + error.message;
+    }
+  };
+
+  window.logout = async function () {
+    await signOut(auth);
+  };
 
   window.setWinner = async function (choice) {
     await set(ref(db, 'winner'), choice);
