@@ -108,7 +108,7 @@
     return "random";
   }
 
-  async function flipCoins() {
+  window.flipCoins = async function () {
     const winner = await getWinnerPreference();
     const coinEls = [document.getElementById("coin1"), document.getElementById("coin2"), document.getElementById("coin3")];
     let flips = [];
@@ -154,7 +154,7 @@
       spread: 100,
       origin: { y: 0.6 }
     });
-  }
+  };
 
   window.resetScore = function () {
     headsTotal = 0;
@@ -162,7 +162,7 @@
     document.getElementById("headsWin").textContent = headsTotal;
     document.getElementById("tailsWin").textContent = tailsTotal;
     document.getElementById("result").textContent = "";
-  }
+  };
 </script>
 
 </body>
