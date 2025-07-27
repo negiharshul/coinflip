@@ -4,25 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Flip a Coin Online | TheCoinFlip</title>
-  
   <link rel="icon" type="image/png" href="/favicon-32x32.png">
-
-  <meta name="google-site-verification" content="20MbBauKzYthfY-cIg_A1cxWpf8qz_Ud5fFPaeI3HMA" />
-  
-  <meta name="description" content="Flip a coin online with TheCoinFlip – a fast, fun, and fair coin toss generator. Heads or Tails? Try your luck now!">
-  <meta name="keywords" content="coin flip, flip a coin, online coin toss, virtual coin flipper, random coin generator, coin toss game, fair coin flip">
-  <meta name="author" content="TheCoinFlip">
-  <meta name="robots" content="index, follow">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Flip a coin online with TheCoinFlip – a fast, fun, and fair coin toss generator. Heads or Tails? Try your luck now!">
 
-  <!-- Open Graph for Social Sharing -->
-  <meta property="og:title" content="Flip a Coin Online | TheCoinFlip">
-  <meta property="og:description" content="Flip a coin instantly with sound and animation. Perfect for decisions, games, or just for fun!">
-  <meta property="og:image" content="https://thecoinflip.online/icon.png"> <!-- Replace with your actual image URL -->
-  <meta property="og:url" content="https://thecoinflip.online">
-  <meta name="twitter:card" content="summary_large_image">
-
-  <title>Remote Coin Flip</title>
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
@@ -119,8 +104,10 @@
 <div id="win-count">Heads Wins: <span id="headsWin">0</span> | Tails Wins: <span id="tailsWin">0</span></div>
 <button onclick="flipCoin()">Flip Coin</button>
 
-<audio id="win-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_f9c87f160b.mp3?filename=success-1-6297.mp3"></audio>
-<audio id="flip-sound" src="https://cdn.pixabay.com/download/audio/2022/03/02/audio_29a92d4f87.mp3?filename=coin-flip-1-88699.mp3"></audio>
+<!-- LOCAL AUDIO FILES -->
+<audio id="win-sound" src="sounds/winner.wav"></audio>
+<audio id="flip-sound" src="sounds/coin-flip.wav"></audio>
+
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
 <script type="module">
@@ -132,7 +119,7 @@
     authDomain: "coin-flip-control.firebaseapp.com",
     databaseURL: "https://coin-flip-control-default-rtdb.firebaseio.com",
     projectId: "coin-flip-control",
-    storageBucket: "coin-flip-control.firebasestorage.app",
+    storageBucket: "coin-flip-control.appspot.com",
     messagingSenderId: "145885761579",
     appId: "1:145885761579:web:844502ebb927c8114d1a6e"
   };
@@ -172,6 +159,7 @@
     // Play flip sound
     const flipSound = document.getElementById("flip-sound");
     flipSound.volume = 0.4;
+    flipSound.currentTime = 0;
     flipSound.play();
 
     if (currentFlip === 0) {
@@ -217,7 +205,9 @@
 
       const winSound = document.getElementById("win-sound");
       winSound.volume = 0.6;
+      winSound.currentTime = 0;
       winSound.play();
+
       confetti({ particleCount: 80, spread: 100, origin: { y: 0.6 } });
 
       setTimeout(() => {
